@@ -23,9 +23,16 @@ internal sealed class TrayApplicationContext : ApplicationContext
         BuildMenu();
 
         Icon? icon = null;
-        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "icon.ico");
-        if (File.Exists(iconPath))
-            icon = new Icon(iconPath);
+        try
+        {
+            var exePath = Environment.ProcessPath ?? Application.ExecutablePath;
+            if (!string.IsNullOrWhiteSpace(exePath))
+                icon = Icon.ExtractAssociatedIcon(exePath);
+        }
+        catch
+        {
+            // fallback below
+        }
 
         _trayIcon = new NotifyIcon
         {
