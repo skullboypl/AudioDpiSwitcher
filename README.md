@@ -1,161 +1,135 @@
-# AudioDpiSwitcher
+# AudioDpiSwitcher - Windows Audio Device Switcher and Per-Monitor DPI Tool
 
-**Audio & DPI Switcher** – A lightweight Python-based **system tray application** for quickly switching:
+**AudioDpiSwitcher** is a lightweight **Windows 10/11 system tray app** (C# / .NET 8) for switching **default playback and recording devices**, locking preferred audio endpoints with **auto-restore**, and changing **per-monitor DPI scaling** without opening Windows Settings every time.
 
-- **Default audio devices** (media / communications)
-- **Microphones** (media / communications)
-- **Display DPI scaling** per monitor
+Ideal if you use multiple headphones, speakers, microphones, Voicemeeter, virtual cables, or multi-monitor setups and need fast control from the tray.
 
-It automatically detects connected hardware, supports **persistent monitor index mapping via EDID**, remembers settings, and includes **multi-language support** (EN/PL).
-
----
-
-## ✨ Features
-
-- 🎧 **Quick audio switching**:
-  - Set default playback device (multimedia)
-  - Set default playback device (communications)
-  - Set default recording device (microphone – multimedia)
-  - Set default recording device (microphone – communications)
-
-- 🖥 **Per-monitor DPI scaling**:
-  - Change DPI from predefined presets: 100%, 125%, 150%, 175%, 200%, 225%, 250%, 300%
-  - Read current DPI per monitor
-  - Map monitor EDID fingerprint to SetDpi index for consistent results
-
-- 🔍 **Auto hardware detection**:
-  - Lists all connected audio devices
-  - Lists all physical monitors with EDID info (Manufacturer, Product, Serial)
-  - Fallback pseudo-fingerprint if EDID not available
-
-- 🌐 **Multi-language UI**:
-  - English (default)
-  - Polish (automatically selected if system language is Polish)
-
-- ⚡ **Fast & responsive**:
-  - Menu built from cached state for instant opening
-  - Background refresh without blocking UI
-  - Runs silently in the Windows system tray
+**Repository:** [github.com/skullboypl/AudioDpiSwitcher](https://github.com/skullboypl/AudioDpiSwitcher)  
+**Author:** [skullboypl](https://github.com/skullboypl)  
+**License:** MIT  
+**Platform:** Windows 10 / Windows 11 (x64)
 
 ---
 
-## 📦 How It Works
+## Why AudioDpiSwitcher?
 
-1. On launch, the app collects:
-   - Available audio devices
-   - Current default devices
-   - List of monitors and their fingerprints
-   - Current DPI for each mapped monitor
-2. Data is cached and used to render the tray menu instantly.
-3. Any action (set device, change DPI) is performed in a background thread.
-4. The app automatically refreshes its state after each change.
+Windows often changes the default sound device after reconnecting USB headsets, docking, or opening communication apps. Display scaling is also buried in Settings and is awkward on multi-monitor desks.
+
+AudioDpiSwitcher keeps preferred **media** and **communications** devices (speakers + mics) and can **automatically put them back** when Windows overrides them. DPI is applied **natively** via DisplayConfig APIs - no separate `SetDpi.exe` helper.
 
 ---
 
-## 🛠 Technical Details
+## Features
 
-- **Language**: Python 3.x  
-- **Dependencies**:
-  - `pystray` – system tray integration
-  - `Pillow` – tray icon drawing
-  - Windows PowerShell – for audio and monitor information
-- **Platform**: Windows 10/11
-- **Additional tool**: `SetDpi.exe` for DPI control
+### Audio
+- Set preferred **default playback** (multimedia) and **communications playback**
+- Set preferred **default microphone** (multimedia) and **communications microphone**
+- One-click **capture current Windows defaults** as preferred (tray + Settings)
+- Optional **auto-restore** (~2.5s) when Windows switches devices away from your prefs
+- Tray shortcut to classic **Windows Sound** panel (`mmsys.cpl`)
 
-**Data Storage**:
-- Monitor mapping saved in:  
-  `%APPDATA%\AudioDpiSwitcher\monitor_map.json`
+### Display DPI
+- Native **per-monitor DPI / scaling** (100% - 400% presets, Win11-ready table)
+- Monitor list shows **name, resolution, and current scale**
+- Selection is preserved after applying a new DPI value
+- Based on the same DisplayConfig approach as [SetDPI](https://github.com/imniko/SetDPI) / [lihas DPI sample](https://github.com/lihas/windows-DPI-scaling-sample), embedded in-process
 
----
-
-## 🚀 Installation & Usage
-
-### From Release (recommended)
-1. Go to the [Releases](../../releases) section.
-2. Download the latest `.exe` version.
-3. This build is **EV Code Signed** – should run without SmartScreen warnings.
-4. Run the application – it will appear in the system tray.
-
-### From Source
-1. Install Python 3.9+ and pip.
-2. Install dependencies:
-   ```bash
-   pip install pystray pillow
-3. Place SetDpi.exe in the same folder as the script.
-4. Run: `python audio_taskbar_switcher.pyw`
----
-
-## 📋 Menu Overview
-
-- **Refreshed at** – Last state refresh time  
-- **Refresh now** – Manual refresh  
-- **Default Audio / Communications Audio / Default Mic / Communications Mic** – shows current default devices  
-- **Per Monitor DPI** – shows DPI for each monitor with quick preset selection  
-- **Index Mapping (by EDID)** – assign SetDpi index for each monitor fingerprint (persistent mapping)  
-- **Quick Audio Switch** – set playback/microphone devices directly from the menu  
-- **Exit** – quit the application  
+### UX and localization
+- Slim tray menu (no clutter)
+- Full configuration in a **Settings** window
+- Languages: **English**, **Polish**, **German** (or follow Windows UI language)
+- Single **left-click** on the tray icon opens Settings
 
 ---
 
-## 🛠 Technical Details
+## Tray menu
 
-- **Language**: Python 3.x  
-- **Dependencies**:
-  - `pystray` – system tray integration
-  - `Pillow` – tray icon drawing
-  - Windows PowerShell – for audio and monitor information
-- **Platform**: Windows 10/11
-- **Additional tool**: [`SetDPI`](https://github.com/imniko/SetDPI) for DPI control  
-  (included in the release build – no need to download separately)
+| Action | Description |
+|--------|-------------|
+| Set as defaults | Save current Windows audio devices as preferred |
+| Settings | Open the app settings window |
+| Windows Settings | Open classic Sound control panel |
+| Exit | Quit the app |
 
-**Data Storage**:
-- Monitor mapping saved in:  
-  `%APPDATA%\AudioDpiSwitcher\monitor_map.json`
+Left-click the tray icon to open Settings. Right-click for the menu.
 
 ---
 
-## 🙏 Acknowledgements 
+## Settings window
 
-- **[SetDPI by imniko](https://github.com/imniko/SetDPI)** – lightweight Windows tool used for reading and changing per-monitor DPI scaling.  
-  Included in this application to provide DPI management functionality.
+1. **Audio** - pick preferred devices, refresh list, use current as defaults, enable auto-restore  
+2. **DPI / Monitors** - choose monitor, preset, apply scaling  
+3. **Language** - Auto / EN / PL / DE  
 
----
-
-
-## 📄 License
-
-This project is released under the **MIT License**.  
-You are free to use, modify, and distribute it, provided that copyright notice is included.
+Config path: `%APPDATA%\AudioDpiSwitcher\settings.json`
 
 ---
 
-## 📷 Screenshots
+## Download and install
 
-<img width="555" height="449" alt="{06AD74B9-EB7F-48F5-BF4E-76C6F740BE46}" src="https://github.com/user-attachments/assets/59c4f2dd-cd1b-4126-b500-4549c9a9e6a1" />
-<img width="598" height="204" alt="{14FCACF0-D0EE-48AA-8BC3-1199528A772A}" src="https://github.com/user-attachments/assets/17739689-8ee5-4c5f-a57a-b19c977fb98f" />
-<img width="909" height="375" alt="{B690C8B5-398D-446C-BA0C-AC50A7EEF439}" src="https://github.com/user-attachments/assets/d33d59b6-fd78-4cdc-bfb3-feb72bf64887" />
+### From Releases (recommended)
 
+1. Open [Releases](https://github.com/skullboypl/AudioDpiSwitcher/releases)
+2. Download the latest signed `AudioDpiSwitcher.exe`
+3. Run it - the icon appears in the Windows system tray
+
+Release builds are intended to be **EV code signed** (see signing notes below).
+
+### From source
+
+Requirements: [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+
+```powershell
+git clone https://github.com/skullboypl/AudioDpiSwitcher.git
+cd AudioDpiSwitcher
+dotnet run --project AudioDpiSwitcher\AudioDpiSwitcher.csproj
+```
+
+---
+
+## Build release (single-file)
+
+```powershell
+.\build.ps1
+.\sign.ps1
+```
+
+Output:
+
+`AudioDpiSwitcher\bin\Release\net8.0-windows\win-x64\publish\AudioDpiSwitcher.exe`
+
+`build.ps1` publishes a **self-contained, single-file** `win-x64` executable.  
+`sign.ps1` is local-only (gitignored) and signs with your EV certificate via `signtool`.
 
 ---
 
-## 🔒 Security Notice
+## Technical overview
 
-The Windows binary provided in the **[Releases](../../releases)** section is signed with an  
-**Extended Validation (EV) Code Signing Certificate**.  
-This means:
-- **No SmartScreen warnings** on Windows 10/11
-- Verified publisher information
-- Safer and more trusted installation experience
+| Item | Detail |
+|------|--------|
+| Stack | C# , .NET 8 , Windows Forms |
+| Tray | `NotifyIcon` |
+| Audio | NAudio (`MMDeviceEnumerator`) + PolicyConfig COM for defaults |
+| DPI | `DisplayConfigGetDeviceInfo` / `DisplayConfigSetDeviceInfo` (undocumented DPI IOCTLs) |
+| Storage | `%APPDATA%\AudioDpiSwitcher\settings.json` |
+| No PowerShell | Audio and DPI run in-process |
+
+---
+
+## Keywords
+
+Windows audio switcher, default playback device, communications device, microphone switcher, system tray sound tool, per-monitor DPI, display scaling Windows 11, multi-monitor DPI, auto restore audio device, Voicemeeter helper, NAudio tray app, .NET 8 WinForms utility.
 
 ---
 
-## 💡 Tips
+## Acknowledgements
 
-- The application stores monitor mappings in:  
-  `%APPDATA%\AudioDpiSwitcher\monitor_map.json`  
-  You can delete this file to reset DPI index mapping.
-
-- If you change connected monitors or audio devices,  
-  use **Refresh now** in the menu to update the device list.
+- DPI scaling technique inspired by **lihas** and **[imniko/SetDPI](https://github.com/imniko/SetDPI)**
 
 ---
+
+## License
+
+This project is released under the **MIT License**. See [LICENSE](LICENSE).
+
+Copyright (c) [skullboypl](https://github.com/skullboypl)
