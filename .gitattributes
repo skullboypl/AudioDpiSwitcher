@@ -1,0 +1,14 @@
+# Language detection (GitHub Linguist)
+*.cs linguist-language=C#
+*.csproj linguist-language=C#
+
+# Not source for language stats
+*.ps1 linguist-detectable=false
+*.md linguist-detectable=false
+LICENSE linguist-detectable=false
+*.ico binary
+AudioDpiSwitcher/Assets/** linguist-vendored=false
+
+# Legacy Python must never affect stats if reintroduced
+*.py linguist-detectable=false
+*.pyw linguist-detectable=false
