@@ -17,6 +17,8 @@ internal sealed class AppSettings
 
     public bool AutoUpdate { get; set; } = true;
 
+    public bool AutoStart { get; set; }
+
     public string? PreferredOutput { get; set; }
     public string? PreferredOutputComm { get; set; }
     public string? PreferredInput { get; set; }

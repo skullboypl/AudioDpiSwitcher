@@ -14,6 +14,7 @@ internal sealed class SettingsForm : Form
     private readonly ComboBox _input = MakeCombo();
     private readonly ComboBox _inputComm = MakeCombo();
     private readonly CheckBox _autoRestore = new() { AutoSize = true };
+    private readonly CheckBox _autoStart = new() { AutoSize = true, MaximumSize = new Size(640, 0) };
     private readonly CheckBox _autoUpdate = new() { AutoSize = true, MaximumSize = new Size(640, 0) };
 
     private readonly Label _curOutput = MakeValue();
@@ -228,6 +229,8 @@ internal sealed class SettingsForm : Form
     {
         page.Add(Hint("app_hint"), StackRow.Hint);
         AddField(page, "group_language", _lang);
+        _autoStart.Tag = "auto_start";
+        page.Add(_autoStart, StackRow.Check);
         _autoUpdate.Tag = "auto_update";
         page.Add(_autoUpdate, StackRow.Check);
         _updateStatus.ForeColor = Color.FromArgb(80, 80, 80);
@@ -550,6 +553,7 @@ internal sealed class SettingsForm : Form
     private void LoadFromSettings()
     {
         _autoRestore.Checked = _settings.AutoRestoreAudio;
+        _autoStart.Checked = StartupService.IsEnabled();
         _autoUpdate.Checked = _settings.AutoUpdate;
         var lang = (_settings.Lang ?? "auto").ToLowerInvariant();
         for (var i = 0; i < _lang.Items.Count; i++)
@@ -588,7 +592,9 @@ internal sealed class SettingsForm : Form
             return;
 
         _settings.AutoRestoreAudio = _autoRestore.Checked;
+        _settings.AutoStart = _autoStart.Checked;
         _settings.AutoUpdate = _autoUpdate.Checked;
+        StartupService.SetEnabled(_autoStart.Checked);
         _settings.Lang = _lang.SelectedItem is LangItem langItem ? langItem.Code : "auto";
         _settings.PreferredOutput = SelectedId(_output);
         _settings.PreferredOutputComm = SelectedId(_outputComm);
@@ -607,7 +613,8 @@ internal sealed class SettingsForm : Form
 
         _tray.ApplySettings(_settings);
         Localize();
-        _ = ReloadDevicesAsync(forceRefresh: true);
+        _ = ReloadDevicesAsync(forceRefresh: false);
+        Hide();
     }
 
     private static string? SelectedId(ComboBox combo)

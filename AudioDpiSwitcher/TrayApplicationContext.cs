@@ -148,6 +148,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
     {
         _settings.Lang = settings.Lang;
         _settings.AutoRestoreAudio = settings.AutoRestoreAudio;
+        _settings.AutoStart = settings.AutoStart;
         _settings.AutoUpdate = settings.AutoUpdate;
         _settings.PreferredOutput = settings.PreferredOutput;
         _settings.PreferredOutputComm = settings.PreferredOutputComm;

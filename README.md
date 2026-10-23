@@ -67,7 +67,7 @@ The screenshots below are the Polish UI. English and German use the same layout.
 
 | Display | App |
 | --- | --- |
-| Per-monitor scale. The list shows name, resolution, and the current percent. | Language, plus updates from GitHub Releases. |
+| Per-monitor scale. The list shows name, resolution, and the current percent. | Language, sign-in startup, and updates from GitHub Releases. Save stores the options and closes the window. |
 | <img src="docs/settings-display.png" alt="Display scaling tab" width="420"> | <img src="docs/settings-app.png" alt="App language and updates tab" width="420"> |
 
 Published builds check GitHub on their own. When a newer `AudioDpiSwitcher.exe` is in Releases, the app downloads it, replaces itself, and restarts. The switch is on the **App** tab. A development build only reports the newer version and does not overwrite its own file.
