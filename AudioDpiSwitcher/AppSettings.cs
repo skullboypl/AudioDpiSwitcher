@@ -15,6 +15,8 @@ internal sealed class AppSettings
 
     public bool AutoRestoreAudio { get; set; } = true;
 
+    public bool AutoUpdate { get; set; } = true;
+
     public string? PreferredOutput { get; set; }
     public string? PreferredOutputComm { get; set; }
     public string? PreferredInput { get; set; }

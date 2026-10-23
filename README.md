@@ -35,10 +35,11 @@ AudioDpiSwitcher keeps preferred **media** and **communications** devices (speak
 - Based on the same DisplayConfig approach as [SetDPI](https://github.com/imniko/SetDPI) / [lihas DPI sample](https://github.com/lihas/windows-DPI-scaling-sample), embedded in-process
 
 ### UX and localization
-- Slim tray menu (no clutter)
-- Full configuration in a **Settings** window
+- Slim tray menu
+- Settings in four tabs: **Preferred**, **Current**, **Display**, **App**
 - Languages: **English**, **Polish**, **German** (or follow Windows UI language)
 - Single **left-click** on the tray icon opens Settings
+- **Auto-update** from GitHub Releases on published builds
 
 ---
 
@@ -46,9 +47,9 @@ AudioDpiSwitcher keeps preferred **media** and **communications** devices (speak
 
 | Action | Description |
 |--------|-------------|
-| Set as defaults | Save current Windows audio devices as preferred |
-| Settings | Open the app settings window |
-| Windows Settings | Open classic Sound control panel |
+| Settings | Open the settings window |
+| Windows Settings | Open the classic Sound control panel |
+| Set as defaults | Save the current Windows audio devices as preferred |
 | Exit | Quit the app |
 
 Left-click the tray icon to open Settings. Right-click for the menu.
@@ -57,9 +58,19 @@ Left-click the tray icon to open Settings. Right-click for the menu.
 
 ## Settings window
 
-1. **Audio** - pick preferred devices, refresh list, use current as defaults, enable auto-restore  
-2. **DPI / Monitors** - choose monitor, preset, apply scaling  
-3. **Language** - Auto / EN / PL / DE  
+The screenshots below are the Polish UI. English and German use the same layout.
+
+| Preferred | Current |
+| --- | --- |
+| Devices to keep. Auto-restore puts them back when Windows changes them. | What Windows is using right now. One click saves that set as preferred. |
+| <img src="docs/settings-preferred.png" alt="Preferred devices tab" width="420"> | <img src="docs/settings-current.png" alt="Current devices tab" width="420"> |
+
+| Display | App |
+| --- | --- |
+| Per-monitor scale. The list shows name, resolution, and the current percent. | Language, plus updates from GitHub Releases. |
+| <img src="docs/settings-display.png" alt="Display scaling tab" width="420"> | <img src="docs/settings-app.png" alt="App language and updates tab" width="420"> |
+
+Published builds check GitHub on their own. When a newer `AudioDpiSwitcher.exe` is in Releases, the app downloads it, replaces itself, and restarts. The switch is on the **App** tab. A development build only reports the newer version and does not overwrite its own file.
 
 Config path: `%APPDATA%\AudioDpiSwitcher\settings.json`
 
@@ -118,7 +129,7 @@ Output:
 
 ## Keywords
 
-Windows audio switcher, default playback device, communications device, microphone switcher, system tray sound tool, per-monitor DPI, display scaling Windows 11, multi-monitor DPI, auto restore audio device, Voicemeeter helper, NAudio tray app, .NET 8 WinForms utility.
+Windows audio switcher, default playback device, communications device, microphone switcher, system tray sound tool, per-monitor DPI, display scaling Windows 11, multi-monitor DPI, auto restore audio device, GitHub release auto-update, Voicemeeter helper, NAudio tray app, .NET 8 WinForms utility.
 
 ---
 

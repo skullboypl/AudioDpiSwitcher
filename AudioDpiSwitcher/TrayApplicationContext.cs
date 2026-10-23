@@ -11,6 +11,8 @@ internal sealed class TrayApplicationContext : ApplicationContext
     private readonly AppSettings _settings;
     private readonly AudioService _audio = new();
     private readonly System.Windows.Forms.Timer _restoreTimer;
+    private readonly System.Windows.Forms.Timer _updateTimer;
+    private int _updateCheckRunning;
 
     private SettingsForm? _settingsForm;
 
@@ -55,6 +57,14 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _restoreTimer = new System.Windows.Forms.Timer { Interval = 2500 };
         _restoreTimer.Tick += (_, _) => TryAutoRestore();
         _restoreTimer.Start();
+
+        _updateTimer = new System.Windows.Forms.Timer { Interval = 8000 };
+        _updateTimer.Tick += async (_, _) =>
+        {
+            _updateTimer.Interval = 6 * 60 * 60 * 1000;
+            await CheckForUpdatesAsync(manual: false, install: true);
+        };
+        _updateTimer.Start();
 
         // Warm audio cache shortly after startup (STA-safe)
         var warm = new System.Windows.Forms.Timer { Interval = 100 };
@@ -138,6 +148,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
     {
         _settings.Lang = settings.Lang;
         _settings.AutoRestoreAudio = settings.AutoRestoreAudio;
+        _settings.AutoUpdate = settings.AutoUpdate;
         _settings.PreferredOutput = settings.PreferredOutput;
         _settings.PreferredOutputComm = settings.PreferredOutputComm;
         _settings.PreferredInput = settings.PreferredInput;
@@ -161,6 +172,77 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _settingsForm = new SettingsForm(_settings, _audio, this);
         _settingsForm.FormClosed += (_, _) => _settingsForm = null;
         _settingsForm.Show();
+    }
+
+    public async Task CheckForUpdatesAsync(bool manual, bool install = true)
+    {
+        if (Interlocked.Exchange(ref _updateCheckRunning, 1) == 1)
+            return;
+
+        try
+        {
+            if (!manual && !_settings.AutoUpdate)
+                return;
+
+            UpdateOffer? offer;
+            try
+            {
+                offer = await UpdateService.CheckAsync().ConfigureAwait(true);
+            }
+            catch
+            {
+                SetUpdateStatus(I18n.T("update_fail"));
+                return;
+            }
+
+            if (offer is null)
+            {
+                SetUpdateStatus(I18n.T("update_fail"));
+                return;
+            }
+
+            var current = UpdateService.CurrentVersion.ToString(3);
+            var latest = offer.Version.ToString(3);
+            if (!UpdateService.IsNewer(offer))
+            {
+                SetUpdateStatus(I18n.T("update_ok", ("version", current)));
+                return;
+            }
+
+            SetUpdateStatus(I18n.T("update_status", ("current", current), ("latest", latest)));
+            if (!install || (!manual && !_settings.AutoUpdate))
+                return;
+
+            if (!UpdateService.CanReplaceRunningExe)
+            {
+                SetUpdateStatus(I18n.T("update_status", ("current", current), ("latest", latest))
+                    + " " + I18n.T("update_dev"));
+                return;
+            }
+
+            SetUpdateStatus(I18n.T("update_downloading", ("version", latest)));
+            var downloaded = await UpdateService.DownloadAsync(offer).ConfigureAwait(true);
+            _trayIcon.ShowBalloonTip(4000, I18n.T("app_name"), I18n.T("update_restarting", ("version", latest)), ToolTipIcon.Info);
+            UpdateService.LaunchReplacer(downloaded);
+            var exit = new System.Windows.Forms.Timer { Interval = 600 };
+            exit.Tick += (_, _) =>
+            {
+                exit.Stop();
+                exit.Dispose();
+                ExitApp();
+            };
+            exit.Start();
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _updateCheckRunning, 0);
+        }
+    }
+
+    private void SetUpdateStatus(string text)
+    {
+        if (_settingsForm is { IsDisposed: false })
+            _settingsForm.SetUpdateStatus(text);
     }
 
     private static void OpenWindowsSound()
@@ -232,6 +314,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
     private void ExitApp()
     {
         _restoreTimer.Stop();
+        _updateTimer.Stop();
         _trayIcon.Visible = false;
         _trayIcon.Dispose();
         _audio.Dispose();
@@ -243,6 +326,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
         if (disposing)
         {
             _restoreTimer.Dispose();
+            _updateTimer.Dispose();
             _trayIcon.Dispose();
             _audio.Dispose();
         }
