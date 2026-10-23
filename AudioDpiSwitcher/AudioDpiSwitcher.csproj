@@ -9,7 +9,7 @@
     <RootNamespace>AudioDpiSwitcher</RootNamespace>
     <AssemblyName>AudioDpiSwitcher</AssemblyName>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
     <Company>AudioDpiSwitcher</Company>
     <Product>Audio &amp; DPI Switcher</Product>
     <Description>System tray app for audio device switching and per-monitor DPI</Description>

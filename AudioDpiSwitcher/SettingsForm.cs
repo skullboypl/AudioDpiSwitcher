@@ -20,7 +20,14 @@ internal sealed class SettingsForm : Form
     };
     private Button _useCurrentBtn = null!;
     private Button _refreshBtn = null!;
-    private int _audioButtonsBaseY;
+    private Button _setDpiBtn = null!;
+    private Button _applyBtn = null!;
+    private Button _closeBtn = null!;
+    private Label _dpiLabel = null!;
+    private GroupBox _audioGroup = null!;
+    private GroupBox _dpiGroup = null!;
+    private GroupBox _langGroup = null!;
+    private LinkLabel _footer = null!;
 
     private readonly ComboBox _lang = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 220 };
     private readonly ComboBox _monitor = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 400 };
@@ -40,8 +47,9 @@ internal sealed class SettingsForm : Form
         MaximizeBox = false;
         MinimizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
-        ClientSize = new Size(460, 650);
+        ClientSize = new Size(500, 668);
         Font = new Font("Segoe UI", 9f);
+        BackColor = Color.FromArgb(243, 243, 243);
         ShowInTaskbar = true;
 
         BuildUi();
@@ -68,32 +76,49 @@ internal sealed class SettingsForm : Form
     private static ComboBox MakeDeviceCombo() => new()
     {
         DropDownStyle = ComboBoxStyle.DropDownList,
-        Width = 400,
+        Width = 444,
+        IntegralHeight = false,
+        MaxDropDownItems = 12,
     };
 
     private void BuildUi()
     {
+        const int left = 16;
+        const int width = 468;
+
         var audioGroup = new GroupBox
         {
-            Location = new Point(16, 12),
-            Size = new Size(428, 310),
+            Location = new Point(left, 12),
+            Size = new Size(width, 372),
+            Padding = new Padding(12),
         };
         audioGroup.Tag = "group_audio";
 
-        var y = 28;
+        var hint = new Label
+        {
+            AutoSize = false,
+            Location = new Point(14, 24),
+            Size = new Size(440, 32),
+            ForeColor = Color.FromArgb(80, 80, 80),
+            Tag = "audio_hint",
+        };
+        audioGroup.Controls.Add(hint);
+
+        var y = 58;
         AddLabeledCombo(audioGroup, "label_output", _output, ref y);
         AddLabeledCombo(audioGroup, "label_output_comm", _outputComm, ref y);
         AddLabeledCombo(audioGroup, "label_input", _input, ref y);
         AddLabeledCombo(audioGroup, "label_input_comm", _inputComm, ref y);
 
-        _autoRestore.Location = new Point(14, y + 2);
+        _autoRestore.Location = new Point(14, y);
+        _autoRestore.MaximumSize = new Size(440, 0);
         _autoRestore.Tag = "auto_restore";
         audioGroup.Controls.Add(_autoRestore);
-        _audioButtonsBaseY = y + 2;
+        _audioGroup = audioGroup;
 
         _useCurrentBtn = new Button
         {
-            Size = new Size(250, 28),
+            Size = new Size(250, 30),
             Tag = "use_current_defaults",
         };
         _useCurrentBtn.Click += (_, _) => UseCurrentAsDefaults();
@@ -101,80 +126,81 @@ internal sealed class SettingsForm : Form
 
         _refreshBtn = new Button
         {
-            Size = new Size(136, 28),
+            Size = new Size(120, 30),
             Tag = "refresh_devices",
         };
         _refreshBtn.Click += (_, _) => _ = ReloadDevicesAsync(forceRefresh: true);
         audioGroup.Controls.Add(_refreshBtn);
-
         LayoutAudioActionRow();
 
+        var dpiTop = audioGroup.Bottom + 10;
         var dpiGroup = new GroupBox
         {
-            Location = new Point(16, 334),
-            Size = new Size(428, 120),
+            Location = new Point(left, dpiTop),
+            Size = new Size(width, 128),
             Tag = "group_dpi",
         };
 
         var monLabel = new Label { AutoSize = true, Location = new Point(14, 24), Tag = "monitor" };
         _monitor.Location = new Point(14, 44);
+        _monitor.Width = 440;
         _monitor.SelectedIndexChanged += OnMonitorSelectedHandler;
 
-        var dpiLabel = new Label { AutoSize = true, Location = new Point(14, 78), Tag = "dpi_preset" };
-        _dpiPreset.Location = new Point(100, 74);
+        _dpiLabel = new Label { AutoSize = true, Location = new Point(14, 84), Tag = "dpi_preset" };
+        _dpiPreset.Width = 110;
         foreach (var p in DpiService.Presets)
             _dpiPreset.Items.Add($"{p}%");
 
-        var setDpiBtn = new Button
+        _setDpiBtn = new Button
         {
-            Location = new Point(240, 73),
-            Size = new Size(160, 28),
+            Size = new Size(180, 28),
             Tag = "set_dpi",
         };
-        setDpiBtn.Click += (_, _) => ApplyDpi();
+        _setDpiBtn.Click += (_, _) => ApplyDpi();
 
         dpiGroup.Controls.Add(monLabel);
         dpiGroup.Controls.Add(_monitor);
-        dpiGroup.Controls.Add(dpiLabel);
+        dpiGroup.Controls.Add(_dpiLabel);
         dpiGroup.Controls.Add(_dpiPreset);
-        dpiGroup.Controls.Add(setDpiBtn);
+        dpiGroup.Controls.Add(_setDpiBtn);
+        _dpiGroup = dpiGroup;
 
+        var langTop = dpiGroup.Bottom + 10;
         var langGroup = new GroupBox
         {
-            Location = new Point(16, 466),
-            Size = new Size(428, 70),
+            Location = new Point(left, langTop),
+            Size = new Size(width, 64),
             Tag = "group_language",
         };
-        _lang.Location = new Point(14, 28);
+        _lang.Location = new Point(14, 26);
+        _lang.Width = 220;
         langGroup.Controls.Add(_lang);
+        _langGroup = langGroup;
 
-        var applyBtn = new Button
+        _applyBtn = new Button
         {
-            Location = new Point(250, 552),
-            Size = new Size(90, 28),
+            Size = new Size(88, 30),
             Tag = "apply",
         };
-        applyBtn.Click += (_, _) => ApplyAll();
+        _applyBtn.Click += (_, _) => ApplyAll();
 
-        var closeBtn = new Button
+        _closeBtn = new Button
         {
-            Location = new Point(348, 552),
-            Size = new Size(90, 28),
+            Size = new Size(88, 30),
             Tag = "close",
         };
-        closeBtn.Click += (_, _) => Close();
+        _closeBtn.Click += (_, _) => Close();
 
-        var footer = new LinkLabel
+        _footer = new LinkLabel
         {
             AutoSize = true,
-            Location = new Point(16, 598),
-            Text = $"© {DateTime.Now.Year}  skullboypl",
             LinkColor = Color.FromArgb(0, 102, 204),
             ActiveLinkColor = Color.FromArgb(0, 70, 160),
+            Text = $"© {DateTime.Now.Year} skullboypl",
         };
-        var nameStart = footer.Text.IndexOf("skullboypl", StringComparison.Ordinal);
-        footer.LinkArea = new LinkArea(nameStart, "skullboypl".Length);
-        footer.LinkClicked += (_, _) =>
+        var nameStart = _footer.Text.IndexOf("skullboypl", StringComparison.Ordinal);
+        _footer.LinkArea = new LinkArea(nameStart, "skullboypl".Length);
+        _footer.LinkClicked += (_, _) =>
         {
             try
             {
@@ -193,35 +219,53 @@ internal sealed class SettingsForm : Form
         Controls.Add(audioGroup);
         Controls.Add(dpiGroup);
         Controls.Add(langGroup);
-        Controls.Add(applyBtn);
-        Controls.Add(closeBtn);
-        Controls.Add(footer);
+        Controls.Add(_applyBtn);
+        Controls.Add(_closeBtn);
+        Controls.Add(_footer);
 
-        AcceptButton = applyBtn;
-        CancelButton = closeBtn;
+        Reflow();
+        AcceptButton = _applyBtn;
+        CancelButton = _closeBtn;
     }
 
     private void LayoutAudioActionRow()
     {
-        var checkboxBottom = _autoRestore.Bottom;
-        var buttonsY = Math.Max(_audioButtonsBaseY + 22, checkboxBottom + 8);
+        var buttonsY = _autoRestore.Bottom + 10;
         _useCurrentBtn.Location = new Point(14, buttonsY);
-        _refreshBtn.Location = new Point(274, buttonsY);
+        _refreshBtn.Location = new Point(294, buttonsY);
 
-        if (_useCurrentBtn.Parent is GroupBox audioGroup)
-        {
-            var needed = buttonsY + _useCurrentBtn.Height + 14;
-            if (audioGroup.Height < needed)
-                audioGroup.Height = needed;
-        }
+        _refreshBtn.Left = _audioGroup.Width - 14 - _refreshBtn.Width;
+        _useCurrentBtn.Width = Math.Max(160, _refreshBtn.Left - 24 - 14);
+        _audioGroup.Height = buttonsY + _useCurrentBtn.Height + 16;
+    }
+
+    private void Reflow()
+    {
+        const int left = 16;
+        LayoutAudioActionRow();
+
+        _dpiGroup.Top = _audioGroup.Bottom + 10;
+        _dpiLabel.Location = new Point(14, 84);
+        _dpiPreset.Location = new Point(_dpiLabel.Right + 12, 78);
+        _setDpiBtn.Location = new Point(_dpiPreset.Right + 12, 78);
+        var dpiBottom = Math.Max(_monitor.Bottom, _setDpiBtn.Bottom) + 16;
+        if (dpiBottom > 48)
+            _dpiGroup.Height = dpiBottom;
+
+        _langGroup.Top = _dpiGroup.Bottom + 10;
+        var buttonTop = _langGroup.Bottom + 14;
+        _closeBtn.Location = new Point(_dpiGroup.Right - _closeBtn.Width, buttonTop);
+        _applyBtn.Location = new Point(_closeBtn.Left - 8 - _applyBtn.Width, buttonTop);
+        _footer.Location = new Point(left, _closeBtn.Bottom + 14);
+        ClientSize = new Size(_audioGroup.Right + left, _footer.Bottom + 16);
     }
 
     private static void AddLabeledCombo(Control parent, string tag, ComboBox combo, ref int y)
     {
         var label = new Label { AutoSize = true, Location = new Point(14, y), Tag = tag };
-        y += 18;
+        y += 16;
         combo.Location = new Point(14, y);
-        y += 30;
+        y += 32;
         parent.Controls.Add(label);
         parent.Controls.Add(combo);
     }
@@ -250,7 +294,7 @@ internal sealed class SettingsForm : Form
             }
         }
 
-        LayoutAudioActionRow();
+        Reflow();
     }
 
     private void LocalizeControl(Control control)
@@ -326,7 +370,7 @@ internal sealed class SettingsForm : Form
             foreach (var d in _displays)
             {
                 var res = d.Width > 0 && d.Height > 0 ? $"{d.Width}×{d.Height}" : "?×?";
-                _monitor.Items.Add($"{d.Index}. {d.Name}  -  {res}  ({d.CurrentDpi}%)");
+                _monitor.Items.Add($"{d.Index}. {d.Name} - {res} ({d.CurrentDpi}%)");
             }
         }
         finally
